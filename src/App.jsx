@@ -6,6 +6,9 @@ const App = () => {
   const [user, setUser] = useState({
     name:'', age:''
   })
+  const [user2, setUser2] = useState({
+    id: '', name:'', age:''
+  })
 
   console.log(users)
   useEffect(() => {
@@ -21,6 +24,15 @@ const App = () => {
 
   function handleChange(event){
     setUser(prevFormData => {
+      return {
+        ...prevFormData,
+      [event.target.name]:event.target.value
+      }
+    })
+  }
+
+  function handleChange2(event){
+    setUser2(prevFormData => {
       return {
         ...prevFormData,
       [event.target.name]:event.target.value
@@ -55,8 +67,41 @@ const App = () => {
 
   }
 
+  async function updateUser(userID){
+    const { data, error } = await supabase
+    .from('users')
+    .update({ id:user2.id, name: user2.name, age: user2.age })
+    .eq('id', userID)
+    
+    fetchUsers()
+
+    if(error)
+      {
+        console.log(error)
+      }
+  
+      if(data)
+      {
+        console.log(data);
+      }
+
+  }
+
+  function displayUser(userID){
+
+    users.map((user) => {
+      if(user.id == userID)
+      {
+        setUser2({id:user.id, name: user.name, age:user.age})
+      }
+    })
+
+  }
+
   return (
     <div>
+      
+      {/* Form 1 */}
       <form onSubmit={createUser}>
         <input
           type="text"
@@ -74,6 +119,27 @@ const App = () => {
           Create
         </button>
       </form>
+
+        {/* Form 2 */}
+        <form onSubmit={()=>updateUser(user2.id)}>
+          <input
+            type="text"
+            name='name'
+            onChange={handleChange2}
+            value={user2.name}
+          />
+          <input
+            type="number"
+            name='age'
+            onChange={handleChange2}
+            value={user2.age}
+          />
+          <button type="submit">
+            Save Changes
+          </button>
+      </form>
+
+
       <table>
         <thead>
           <tr>
@@ -90,7 +156,10 @@ const App = () => {
               <td>{user.id}</td>
               <td>{user.name}</td>
               <td>{user.age}</td>
-              <td><button onClick={() => deleteUser(user.id)}>Delete</button></td>
+              <td>
+              <button onClick={() => displayUser(user.id)}>Edit</button>
+              <button onClick={() => deleteUser(user.id)}>Delete</button>
+              </td>
             </tr> 
           )}
         </tbody>
